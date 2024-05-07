@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    public function messages(){
+    public function messages()
+    {
         return $messages = [
             'name.required' => 'El nombre es requerido',
             'name.string' => 'El nombre debe ser una cadena de texto',
@@ -28,7 +29,6 @@ class UserController extends Controller
     }
     public function create(Request $request)
     {
-        
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|min:4',
             'email' => 'required|email|unique:users',
@@ -46,9 +46,6 @@ class UserController extends Controller
             ], 400);
         }
 
-        //comprueba si el email ya existe
-
-
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -60,10 +57,14 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
+            'password' => 'required|string|min:6',
+        ], $this->messages());
+
+        if ($validator->fails()) {
+            return response()->json(['err' => $validator->errors()->first()], 206);
+        }
 
         if (!auth()->attempt($request->only('email', 'password'))) {
             return response()->json([
