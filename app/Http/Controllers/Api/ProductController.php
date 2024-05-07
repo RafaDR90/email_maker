@@ -33,10 +33,7 @@ class ProductController extends Controller
         $products = Product::where('referencia', 'like', '%' . $reference . '%')
             ->take(10)
             ->get();
-        $acierto=null;
-
-
-        $error = null;
+            
         return response()->json($products);
     }
 }
