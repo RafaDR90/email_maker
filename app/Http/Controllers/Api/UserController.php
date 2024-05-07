@@ -5,17 +5,49 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
+    public function messages(){
+        return $messages = [
+            'name.required' => 'El nombre es requerido',
+            'name.string' => 'El nombre debe ser una cadena de texto',
+            'name.min' => 'El nombre debe tener al menos 4 caracteres',
+            'email.required' => 'El correo electrónico es requerido',
+            'email.email' => 'El correo electrónico debe ser una dirección de correo válida',
+            'email.unique' => 'El correo electrónico ya está en uso',
+            'password.required' => 'La contraseña es requerida',
+            'password.string' => 'La contraseña debe ser una cadena de texto',
+            'password.min' => 'La contraseña debe tener al menos 6 caracteres',
+            'password_confirmation.required' => 'La confirmación de la contraseña es requerida',
+            'password_confirmation.string' => 'La confirmación de la contraseña debe ser una cadena de texto',
+            'password_confirmation.min' => 'La confirmación de la contraseña debe tener al menos 6 caracteres',
+            'password_confirmation.same' => 'La confirmación de la contraseña debe coincidir con la contraseña',
+        ];
+    }
     public function create(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:50',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:4|max:50',
-            'password_confirmation' => 'required|same:password',
-        ]);
+        
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|min:4',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|string|min:6',
+            'password_confirmation' => 'required|string|min:6|same:password',
+        ], $this->messages());
+
+        if ($validator->fails()) {
+            return response()->json(['err' => $validator->errors()->first()], 206);
+        }
+
+        if ($request->password !== $request->password_confirmation) {
+            return response()->json([
+                'message' => 'Password confirmation does not match',
+            ], 400);
+        }
+
+        //comprueba si el email ya existe
+
 
         $user = User::create([
             'name' => $request->name,
