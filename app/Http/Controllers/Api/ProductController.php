@@ -34,6 +34,9 @@ class ProductController extends Controller
             ->take(10)
             ->get();
         $acierto=null;
+
+
+        $error = null;
         return response()->json($products);
     }
 }
