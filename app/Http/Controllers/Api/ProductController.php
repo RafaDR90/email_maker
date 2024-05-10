@@ -12,7 +12,12 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::all();
-        var_dump($products);
+        return response()->json($products);
+    }
+
+    public function getTenProducts()
+    {
+        $products = Product::inRandomOrder()->take(10)->get();
         return response()->json($products);
     }
 

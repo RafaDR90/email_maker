@@ -14,5 +14,6 @@ Route::post('/register', [UserController::class, 'create']);
 Route::post('/login', [UserController::class, 'login']);
 Route::get('/show', [UserController::class, 'show'])->middleware('auth:api');
 Route::get('/logout', [UserController::class, 'logout'])->middleware('auth:api');
-Route::get('/products', [ProductController::class, 'index']);
+Route::post('/products', [ProductController::class, 'index']);
+Route::post('/products/getTenProducts', [ProductController::class, 'getTenProducts']);
 Route::post('/products/search', [ProductController::class, 'searchProductsByRef']);
