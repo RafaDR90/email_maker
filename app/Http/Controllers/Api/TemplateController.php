@@ -15,13 +15,15 @@ class TemplateController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'data' => 'required|array',
+            'data' => 'required',
             'filename' => 'required|string'
         ]);
+
         try {
             $template = new Template();
             $template->user_id = $request->user()->id;
             $template->data = $request->data;
+            $template->img_name = $request->filename;
             $template->save();
 
             return response()->json([
@@ -40,15 +42,16 @@ class TemplateController extends Controller
     {
         // Comprueba si la imagen ha sido subida
         if ($request->hasFile('image')) {
-            
+
             // Obtiene la imagen
             $image = $request->file('image');
+            $userId = $request->user()->id;
 
             // Define el nombre del archivo
-            $filename = $image->getClientOriginalName().'.png';
+            $filename = $userId . ';' . $image->getClientOriginalName() . '.png';
 
             //comprueba si el archivo ya existe
-            if (Storage::disk('public')->exists('images/'.$filename)) {
+            if (Storage::disk('public')->exists('images/' . $filename)) {
                 return response()->json([
                     'message' => 'El archivo ya existe'
                 ], 409);
@@ -68,6 +71,39 @@ class TemplateController extends Controller
             return response()->json([
                 'message' => 'No se ha subido ninguna imagen'
             ], 400);
+        }
+    }
+
+    public function getTemplates(Request $request)
+    {
+        $templates = Template::where('user_id', $request->user()->id)->get();
+        return response()->json($templates);
+    }
+
+
+    public function deleteTemplate(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer'
+        ]);
+
+        $template = Template::find($request->id);
+        $imagen= $template->img_name;
+        $path = 'images/' . $imagen;
+        
+
+
+        if ($template && $template->user_id == $request->user()->id && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+            $template->delete();
+
+            return response()->json([
+                'message' => 'Template deleted successfully'
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'Template not found'
+            ], 404);
         }
     }
 }
